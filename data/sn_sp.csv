@@ -1,13 +1,12 @@
-#Contains estimates for Sn, Sp for non-even-even nuclei
-#Format is Z,A,Sn,Sp
+symbol,Sn,Sp
 #https://journals.aps.org/prc/pdf/10.1103/PhysRevC.56.1720
 #Gives neutron densities for spin up and down of 1.93 and 1.07. S_N = 1/2 * (1.93 - 1.07) = 0.43
 #With isospin symmetry, approximate Sn ~ Sp
-3,6,0.43,0.43
+6Li,0.43,0.43
 #Gives proton spin up density of 1.94, therefor spin down is  3-1.94 = 1.06, so S_p = 1/2(1.94 - 1.06) = 0.44
 #Gives neutron spin up and spin down densities of 1.98 and 2.02, so S_n = 1/2 (1.98 - 2.02) = -0.02
-3,7,-0.02,0.44
+7Li,-0.02,0.44
 #https://journals.aps.org/prd/pdf/10.1103/PhysRevD.88.083516
-9,19,-0.002,0.478
-11,23,0.024,0.224 
-32,73,0.439,0.031
+19F,-0.002,0.478
+23Na,0.024,0.224 
+73Ge,0.439,0.031
