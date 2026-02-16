@@ -34,7 +34,7 @@ def parseConfig(configFileName):
     if k not in detector_block:
       print(f"Error! 'detector' section missing required key: '{k}'")
       sys.exit()
-  #Lists are the same length
+  #number of isotopes same as num fractions
   if len(detector_block["isotopes"]) != len(detector_block["atom_fracs"]):
     print("Error! 'isotopes' and 'atom_fracs' must be the same length")
     sys.exit()
@@ -42,7 +42,14 @@ def parseConfig(configFileName):
   ###########################
   #Check source params valid#
   ###########################
+  #all keys there
   source_block = config["source"]
+  required_keys = ["name", "flavor"]
+  for k in required_keys:
+    if k not in source_block:
+      print(f"Error! 'source' section missing required key: '{k}'")
+      sys.exit()
+  #Valid sources
   valid_sources = ["reactor","mudar"] #More to be implemented
   if not source_block["name"] in valid_sources:
     print(f"Error! Invalid source specified in config file of {source_block['name']}!\nValid sources are:")
@@ -53,11 +60,20 @@ def parseConfig(configFileName):
 
   ##Reactor specific source params##
   if source_block["name"] == 'reactor':
+    #All keys there
     required_keys = ["distance_m","power_GWth","core_isotopes"]
     for k in required_keys:
       if k not in source_params_block:
         print(f"Error! reactor source section missing required key: '{k}'")
         sys.exit()
+    #Check flavor is valid
+    valid_flavors = ["vebar"]
+    if not source_block["flavor"] in valid_flavors:
+      print(f"Error! for 'reactor' source, valid flavors are:")
+      for flavor in valid_flavors:
+        print(flavor)
+      print(f"You put {source_block['flavor']}")
+      sys.exit()
     #Check isotopes are valid--we need energy release per fission defined for proper normalization
     allowed_isotopes = ["235U","238U","239Pu","241Pu"] 
     for isotope, iso_block in source_params_block["core_isotopes"].items():
@@ -72,12 +88,22 @@ def parseConfig(configFileName):
         if not k in iso_block:
           print(f"Error! Each core isotope must have 'fission_frac' and 'filename' defined")
           sys.exit()
-    #check ../data/key_isotope_vebar.csv exist
+    #check isotope filenames exist
     for isotope, iso_block in source_params_block["core_isotopes"].items():
       fname = iso_block["filename"]
       if not os.path.exists(fname):
         print(f"Error! Missing reactor spectrum file: {fname}")
         sys.exit()
+
+  #mudar source
+  elif source_block["name"]=="mudar":
+    valid_flavors = ["vubar","vu","ve"]
+    if not source_block["flavor"] in valid_sources:
+      print(f"Error! for 'mudar' source, valid flavors are:")
+      for flavor in valid_flavors:
+        print(flavor)
+      print(f"You put {source_block['flavor']}")
+
 
   ############################
   #Check binning params valid#
@@ -110,9 +136,8 @@ def parseConfig(configFileName):
 #################################
 ##Load nuclear data for targets##
 #################################
-#Loads the masses for calculating thresholds.
+#Loads the masses for calculating thresholds. 
 def loadMassDict(massFile="data/mass_1.mas20.txt"):
-  m_e_amu = 0.000548579905 
   widths = [1,3,5,5,5,1,3,4,1,14,12,13,1, #a1,i3,i5,i5,i5,1x,a3,a4,1x,f14.6,f12.6,f13.5,1x,
             10,1,2,13,11,1,3,1,13,12]     #f10.5,1x,a2,f13.5,f11.5,1x,i3,1x,f13.6,f12.6
   names = ["skip1","N-Z","N","Z","A","skip2","El","O","skip3","mass_excess_keV","mass_excess_unc","binding_energy_keV","skip4",
@@ -126,7 +151,7 @@ def loadMassDict(massFile="data/mass_1.mas20.txt"):
   df["Z"] = df["Z"].astype(int)
   df["atom_mass_1_uamu"] = df["atom_mass_1_uamu"].str.replace("#", "")
   df["atom_mass_2_uamu"] = df["atom_mass_2_uamu"].str.replace("#", "")
-  df["nuc_mass_MeV"] = ((df["atom_mass_1_uamu"].astype(float)*1e6 + df["atom_mass_2_uamu"].astype(float))*1e-6 - df["Z"]*m_e_amu)*constants["amu_to_MeV"]
+  df["nuc_mass_MeV"] = ((df["atom_mass_1_uamu"].astype(float)*1e6 + df["atom_mass_2_uamu"].astype(float))*1e-6 - df["Z"]*constants["m_e_amu"])*constants["amu_to_MeV"]
   df["atom_mass_MeV"] = ((df["atom_mass_1_uamu"].astype(float)*1e6 + df["atom_mass_2_uamu"].astype(float))*1e-6)*constants["amu_to_MeV"]
   df = df[["symbol","A","Z","nuc_mass_MeV","atom_mass_MeV"]].dropna()
 

@@ -1,8 +1,10 @@
 #Constants--can be overwritten by config file
 import math
 
+VERBOSE=1
+
 constants = {
-  "m_e_MeV":0.51099895069, #MeV/c
+  "m_e_amu":0.000548579905,
   "amu_to_MeV": 931.49410242,
   "MeV_to_kg": 1.78266192*math.pow(10,-30),
   "MeV_per_joule": 6241509343260.2,
@@ -37,8 +39,6 @@ def updateConstants():
   #Calculate axial couplings to protons and neutrons
   constants["gp_A"] = 0.5*(constants["gA_u"] - constants["gA_d"] - constants["gA_s"])
   constants["gn_A"] = 0.5*(-constants["gA_u"] + constants["gA_d"] - constants["gA_s"])
-
-
 
 z_dict = {
   "H": 1, "He": 2,

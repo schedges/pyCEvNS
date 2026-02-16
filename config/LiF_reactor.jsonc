@@ -1,0 +1,39 @@
+
+{ 
+  "detector": {
+    "isotopes": ["7Li","19F"], //such as 19F, 208Pb
+    "atom_fracs": [0.9,0.1],
+    "mass_kg": 1.0
+  },
+
+  "source": {
+    "name": "reactor",
+    "flavor": "vebar",
+    //source specific required params
+    "params": {
+      "distance_m": 20.0,
+      "power_GWth": 1.0,
+      //Required format for CSVs: Bin centers (MeV), Neutrinos per Fission per MeV
+      "core_isotopes": {
+        "235U": {"fission_frac": 0.53, "filename": "data/spectra/235U_Silaeva_vebar.csv"},
+        "238U": {"fission_frac": 0.08, "filename": "data/spectra/238U_Silaeva_vebar.csv"},
+        "239Pu": {"fission_frac": 0.32, "filename": "data/spectra/239Pu_Silaeva_vebar.csv"},
+        "241Pu": {"fission_frac": 0.07, "filename": "data/spectra/241Pu_Silaeva_vebar.csv"}
+      }
+    }
+  },
+
+  "binning": {
+    "Enu_step_size_MeV": 0.001, //Binning for neutrino energy grid. Recommended is 1 keV
+    "Enr_step_size_MeV": 0.000001 //Binning for nuclear recoil energy grid. Recommended is 1 eV
+  },
+
+  //Optional
+  "physics_params": {
+    "g_vu_LL": 1.0
+  },
+
+  "output": {
+    "output_folder": "output/LiF"
+  }
+}
