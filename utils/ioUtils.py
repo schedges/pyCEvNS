@@ -123,6 +123,8 @@ def parseConfig(configFileName):
       if not par in constants:
         print(f"Error! User tried to specify physics parameter {par} but that does not exist in constants.py")
         sys.exit()
+      else:
+        constants[par] = config["physics_params"][par]
   updateConstants()
 
   #########################

@@ -17,8 +17,13 @@ constants = {
   "gA_u": 0.862, #Quark spin charges, from https://arxiv.org/pdf/1909.00485 Table XI
   "gA_d": -0.424,
   "gA_s": -0.0458,
-  "vector_form_factor": "constant",
-  "axial_form_factor": "constants", #TODO
+  "axial_ff_type": "uniform",
+  "vector_ff_type": "uniform",
+  #Helm form factor constants
+  "helm_params": {
+    "a":0.52, #fm
+    "s":0.9 #fm
+  },
   
   #Reactor specific
   #From https://arxiv.org/pdf/1212.6625
@@ -32,6 +37,7 @@ constants = {
 
 #Calculated quantities, this fn is called after parsing the input file
 def updateConstants():
+  global constants
   #Calculate vector couplings to protons and neutrons
   constants["gp_V"] = 2*(constants["g_vu_LL"] + constants["g_vu_LR"]) + (constants["g_vd_LL"]+constants["g_vd_LR"])
   constants["gn_V"] = (constants["g_vu_LL"] + constants["g_vu_LR"]) + 2*(constants["g_vd_LL"]+constants["g_vd_LR"])

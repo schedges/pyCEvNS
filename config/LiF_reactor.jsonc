@@ -30,7 +30,7 @@
 
   //Optional
   "physics_params": {
-    "g_vu_LL": 1.0
+    "vector_ff_type":"helm"
   },
 
   "output": {
