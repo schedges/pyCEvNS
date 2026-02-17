@@ -128,6 +128,8 @@ def calc_xs(*,fluxObject,targetObjects,config):
       xs,ff_exp = calc_recoil_xs(E_nu = E_nu,Enrs_MeV=result.Enrs_MeV, target=target)
       result.recoil_kernel[targetName][i] = xs
       result.total_xs_cm2[targetName][i] = np.trapz(xs, result.Enrs_MeV)
+      #TODO: add extra contribution from tail to total_xs
+      
       result.axial_ff_exp[targetName].append(ff_exp["axial_ff"])
       result.vector_ff_exp[targetName].append(ff_exp["vector_ff"])
 

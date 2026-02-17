@@ -119,12 +119,33 @@ def parseConfig(configFileName):
   ###########################
   #If present, check physics params are valid
   if "physics_params" in config:
-    for par in config["physics_params"]:
+    phys_block = config["physics_params"]
+    for par in phys_block:
       if not par in constants:
         print(f"Error! User tried to specify physics parameter {par} but that does not exist in constants.py")
         sys.exit()
       else:
-        constants[par] = config["physics_params"][par]
+        constants[par] = phys_block[par]
+
+    #Specific form-factor checks
+    allowed_ffs = ["helm","uniform"]
+    if "vector_ff_type" in phys_block:
+      if not phys_block["vector_ff_type"] in allowed_ffs:
+        print("Error! Allowed ff types are:")
+        for ff in allowed_ffs:
+          print(ff)
+        print(f"Your choice of {phys_block['vector_ff_type']} vector_ff_type is invalid! Exiting!")
+        print("Exiting!")
+        sys.exit()
+
+    if "axial_ff_type" in phys_block:
+      if not phys_block["axial_ff_type"] in allowed_ffs:
+        print("Error! Allowed ff types are:")
+        for ff in allowed_ffs:
+          print(ff)
+        print(f"Your choice of {phys_block['axial_ff_type']} axial_ff_type is invalid! Exiting!")
+        sys.exit()
+  
   updateConstants()
 
   #########################
