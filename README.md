@@ -1,1 +1,1 @@
-An attempt at a simple CEvNS calculator in python. Will update read-me with more details on usage, data sources, etc. in near future
+An attempt at a simple CEvNS calculator in python. Will update read-me with more details on usage, data sources, etc. in near future. Currently runs using a supplied config specifying things like neutrino source, detector, physics parameters, binning, output. Still many things to do to make this more user friendly and expand reach of what it can do.
