@@ -19,8 +19,8 @@
   },
 
   "binning": {
-    "Enu_step_size_MeV": 0.01, //Binning for neutrino energy grid. Recommended is 1 keV
-    "Enr_step_size_MeV": 0.00001 //Binning for nuclear recoil energy grid. Recommended is 1 eV
+    "Enu_step_size_MeV": 0.01, //Binning for neutrino energy grid. Recommended is 10 keV
+    "Enr_step_size_MeV": 0.00001 //Binning for nuclear recoil energy grid. Recommended is 10 eV
   },
 
   //Optional

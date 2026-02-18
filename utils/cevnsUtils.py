@@ -25,7 +25,7 @@ class CEvNSObject():
     self.vector_ff_exp = {}
 
 #Calculate xs vs recoil energy for the given neutrino energy
-def calc_recoil_xs(*,E_nu,Enrs_MeV,target):
+def calc_recoil_xs(*,E_nu,Enrs_MeV,target,axial_form_factors=None,vector_form_factors=None):
   #Load constants
   GF_MeV2 = constants["GF_MeV2"]
   gp_V = constants["gp_V"]
@@ -41,12 +41,14 @@ def calc_recoil_xs(*,E_nu,Enrs_MeV,target):
   sp = target.sp
 
   #Calculate q^2
-  q_s_per_cm = np.sqrt(2*M*Enrs_MeV + np.power(Enrs_MeV,2))/constants["hbarc_MeVcm"]
-  q_s_per_fm = q_s_per_cm * 1.e-13
-
   #Energy/momentum transfer specific constants
-  vector_form_factors = formFactorUtils.calcFormFactors(target,q_s_per_fm,constants["vector_ff_type"])
-  axial_form_factors = formFactorUtils.calcFormFactors(target,q_s_per_fm,constants["axial_ff_type"])
+  if axial_form_factors is None or vector_form_factors is None:
+    q_s_per_cm = np.sqrt(2*M*Enrs_MeV + np.power(Enrs_MeV,2))/constants["hbarc_MeVcm"]
+    q_s_per_fm = q_s_per_cm * 1.e-13
+  if axial_form_factors is None:
+    axial_form_factors = formFactorUtils.calcFormFactors(target,q_s_per_fm,constants["axial_ff_type"]) 
+  if vector_form_factors is None:
+    vector_form_factors = formFactorUtils.calcFormFactors(target,q_s_per_fm,constants["vector_ff_type"])
 
   #Calculate the XS at each possible KE 
   xs = np.zeros(Enrs_MeV.size)
@@ -122,11 +124,18 @@ def calc_xs(*,fluxObject,targetObjects,config):
     result.axial_ff_exp[targetName] = []
     result.vector_ff_exp[targetName] = []
 
+    #Pre-compute axial and vector form factors
+    M = target.nuc_mass_MeV
+    q_s_per_cm = np.sqrt(2*M*Enrs_MeV + np.power(Enrs_MeV,2))/constants["hbarc_MeVcm"]
+    q_s_per_fm = q_s_per_cm * 1.e-13
+    axial_form_factors = formFactorUtils.calcFormFactors(target,q_s_per_fm,constants["axial_ff_type"])
+    vector_form_factors = formFactorUtils.calcFormFactors(target,q_s_per_fm,constants["vector_ff_type"])
+
     for i,E_nu in enumerate(result.Enus_MeV):
       if i%1000==0:
         print(f"Done calculating xs for E_nu={result.Enus_MeV[i]:.2f} MeV")
       #Calculate cross section vs. energy
-      xs,ff_exp = calc_recoil_xs(E_nu = E_nu,Enrs_MeV=result.Enrs_MeV, target=target)
+      xs,ff_exp = calc_recoil_xs(E_nu = E_nu,Enrs_MeV=result.Enrs_MeV, target=target, axial_form_factors=axial_form_factors, vector_form_factors=vector_form_factors)
       result.recoil_kernel[targetName][i] = xs
       result.total_xs_cm2[targetName][i] = np.sum(xs) * Enr_step_size_MeV
       #TODO: add extra contribution from tail to total_xs
