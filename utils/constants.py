@@ -5,6 +5,8 @@ VERBOSE=1
 
 constants = {
   "m_e_amu":0.000548579905,
+  "m_mu_MeV":105.6583755,
+  "m_pi+_MeV":139.57039,
   "amu_to_MeV": 931.49410242,
   "MeV_to_kg": 1.78266192*math.pow(10,-30),
   "MeV_per_joule": 6241509343260.2,
@@ -34,6 +36,7 @@ constants = {
     "241Pu": 213.6
   }
 }
+constants["m_e_MeV"] = constants["m_e_amu"]*constants["amu_to_MeV"]
 
 #Calculated quantities, this fn is called after parsing the input file
 def updateConstants():

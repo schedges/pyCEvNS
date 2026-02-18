@@ -1,9 +1,9 @@
 #REQUIRES UNFORM ENERGY BINNING FOR RAW CSV, GIVEN AS FLUX/MeV!!!
 import numpy as np
 import math
+import sys
 from utils import ioUtils
 from utils.constants import constants, VERBOSE
-
 
 class FluxObject():
   def __init__(self,raw_energies,raw_fluxes):
@@ -83,7 +83,77 @@ def makeReactorFluxObjects(config):
       
   return fluxObjects
 
+def makePiDARFluxObjects(config):
+  fluxObjects = {}
+  Enu_vu = (math.pow(constants["m_pi+_MeV"],2) - math.pow(constants["m_mu_MeV"],2)) / (2*constants["m_pi+_MeV"])
+  Enu_max = (math.pow(constants["m_mu_MeV"],2) - math.pow(constants["m_e_MeV"],2)) / (2*constants["m_mu_MeV"])
+
+  #Define energy grid
+  interpolated_bin_size = config["binning"]["Enu_step_size_MeV"]
+  interpolated_energies_MeV = np.arange(0+interpolated_bin_size/2.,Enu_max+interpolated_bin_size/2.,interpolated_bin_size) #Bin centers
+
+  #Calculate spectral shapes
+  vu_obj = FluxObject(None,None)
+  vu_obj.interpolated_energies_MeV = interpolated_energies_MeV
+  vu_obj.interpolated_flux = np.zeros_like(interpolated_energies_MeV)
+
+  #Find bin in interpolated energies with Enu_vu
+  vu_bin = np.argmin(np.abs(interpolated_energies_MeV - Enu_vu))
+  vu_obj.interpolated_flux[vu_bin] = 1./interpolated_bin_size
+
+  vubar_obj = FluxObject(None,None)
+  vubar_obj.interpolated_energies_MeV = interpolated_energies_MeV
+  vubar_obj.interpolated_flux = 16*np.power(interpolated_energies_MeV,2)*(3.*constants["m_mu_MeV"]-4*interpolated_energies_MeV)/np.power(constants["m_mu_MeV"],4) 
+  #don't allow flux to be negative
+  vubar_obj.interpolated_flux = np.maximum(vubar_obj.interpolated_flux, 0.0)
+
+  ve_obj = FluxObject(None,None)
+  ve_obj.interpolated_energies_MeV = interpolated_energies_MeV
+  ve_obj.interpolated_flux = 96*np.power(interpolated_energies_MeV,2)*(constants["m_mu_MeV"]-2.0*interpolated_energies_MeV)/np.power(constants["m_mu_MeV"],4)
+  ve_obj.interpolated_flux = np.maximum(ve_obj.interpolated_flux, 0.0)
+  #mask negative
+
+  if config["source"]["flavor"]=="vu":
+    fluxObjects = {"vu":vu_obj}
+  elif config["source"]["flavor"]=="vubar":
+    fluxObjects = {"vubar":vubar_obj}
+  elif config["source"]["flavor"]=="ve":
+    fluxObjects = {"ve":ve_obj}
+  else:
+    fluxObjects = {"vu":vu_obj,
+                   "ve":ve_obj,
+                   "vubar":vubar_obj}
+
+  #Normalize to num neutrinos
+  source_params_block = config["source"]["params"]
+  beamPower_W = source_params_block["beam_power_MW"]*1e6
+  beamEnergy_J = source_params_block["beam_energy_MeV"]/constants["MeV_per_joule"]
+  protons_per_sec = beamPower_W/beamEnergy_J
+  nus_per_flavor_per_sec = protons_per_sec*source_params_block["nu_per_flavor_per_proton"]
+  distance_cm = source_params_block["distance_m"]*100
+  nus_per_flavor_per_sec /= (4*math.pi*math.pow(distance_cm,2)) 
+  for flavor_name,fluxObject in fluxObjects.items():
+    #Normalize area to 1
+    area = np.trapz(fluxObject.interpolated_flux, x=fluxObject.interpolated_energies_MeV)
+    if area <=0:
+      print(f"Error in normalization of pidar source, area of {flavor_name} spectrum <= 0, exiting!")
+      sys.exit()
+    fluxObject.interpolated_flux /= area
+    fluxObject.normalized_flux = fluxObject.interpolated_flux * nus_per_flavor_per_sec
+
+  #Create "all" object if all requested
+  if config["source"]["flavor"]=="all":
+    vall_obj = FluxObject(None,None)
+    vall_obj.interpolated_energies_MeV = interpolated_energies_MeV
+    vall_obj.interpolated_flux = ve_obj.interpolated_flux + vu_obj.interpolated_flux + vubar_obj.interpolated_flux
+    vall_obj.normalized_flux = ve_obj.normalized_flux + vu_obj.normalized_flux + vubar_obj.normalized_flux
+    fluxObjects["total"] = vall_obj
+
+  return fluxObjects
+
 def makeFluxObjects(*,config):
   if config["source"]["name"]=="reactor":
     fluxObjects = makeReactorFluxObjects(config)
+  elif config["source"]["name"]=="pidar":
+    fluxObjects = makePiDARFluxObjects(config)
   return fluxObjects

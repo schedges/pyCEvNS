@@ -50,7 +50,7 @@ def parseConfig(configFileName):
       print(f"Error! 'source' section missing required key: '{k}'")
       sys.exit()
   #Valid sources
-  valid_sources = ["reactor","mudar"] #More to be implemented
+  valid_sources = ["reactor","pidar"] #More to be implemented
   if not source_block["name"] in valid_sources:
     print(f"Error! Invalid source specified in config file of {source_block['name']}!\nValid sources are:")
     for source in valid_sources:
@@ -95,15 +95,22 @@ def parseConfig(configFileName):
         print(f"Error! Missing reactor spectrum file: {fname}")
         sys.exit()
 
-  #mudar source
-  elif source_block["name"]=="mudar":
-    valid_flavors = ["vubar","vu","ve"]
-    if not source_block["flavor"] in valid_sources:
-      print(f"Error! for 'mudar' source, valid flavors are:")
+  #pidar source
+  elif source_block["name"]=="pidar":
+    #Check flavors
+    valid_flavors = ["vubar","vu","ve","all"]
+    if not source_block["flavor"] in valid_flavors:
+      print(f"Error! for 'pidar' source, valid flavors are:")
       for flavor in valid_flavors:
         print(flavor)
       print(f"You put {source_block['flavor']}")
-
+      sys.exit()
+    #Check keys
+    required_keys = ["beam_energy_MeV","beam_power_MW","nu_per_flavor_per_proton","distance_m"]
+    for k in required_keys:
+      if k not in source_params_block:
+        print(f"Error! pidar source section missing required key: '{k}'")
+        sys.exit()
 
   ############################
   #Check binning params valid#

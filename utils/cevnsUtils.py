@@ -123,28 +123,29 @@ def calc_xs(*,fluxObject,targetObjects,config):
     result.vector_ff_exp[targetName] = []
 
     for i,E_nu in enumerate(result.Enus_MeV):
-
+      if i%1000==0:
+        print(f"Done calculating xs for E_nu={result.Enus_MeV[i]:.2f} MeV")
       #Calculate cross section vs. energy
       xs,ff_exp = calc_recoil_xs(E_nu = E_nu,Enrs_MeV=result.Enrs_MeV, target=target)
       result.recoil_kernel[targetName][i] = xs
-      result.total_xs_cm2[targetName][i] = np.trapz(xs, result.Enrs_MeV)
+      result.total_xs_cm2[targetName][i] = np.sum(xs) * Enr_step_size_MeV
       #TODO: add extra contribution from tail to total_xs
       
       result.axial_ff_exp[targetName].append(ff_exp["axial_ff"])
       result.vector_ff_exp[targetName].append(ff_exp["vector_ff"])
 
-  flux_pdf = result.flux/np.trapz(result.flux,result.Enus_MeV)
+  flux_pdf = result.flux/(np.sum(result.flux) * Enu_step_size_MeV)
   for targetName in targetObjects:
 
     #Calculate flux-averaged cross section
-    result.flux_avg_xs_cm2[targetName] = np.trapz(flux_pdf * result.total_xs_cm2[targetName], result.Enus_MeV)
+    result.flux_avg_xs_cm2[targetName] = np.sum(flux_pdf * result.total_xs_cm2[targetName]) * Enu_step_size_MeV
 
     #Calculate recoil spectrum
-    recoil_spectrum = np.trapz(result.flux[:, None] * result.recoil_kernel[targetName], result.Enus_MeV, axis=0)
+    recoil_spectrum = np.sum(result.flux[:, None] * result.recoil_kernel[targetName], axis=0) * Enu_step_size_MeV
     result.normalized_recoil_spectrum_MeV[targetName] = recoil_spectrum*target.num_atoms
     result.normalized_recoil_spectrum_keV[targetName] = result.normalized_recoil_spectrum_MeV[targetName] / 1000
 
     #Total rate
-    result.total_counts[targetName] = np.trapz(result.normalized_recoil_spectrum_MeV[targetName], result.Enrs_MeV)
+    result.total_counts[targetName] = np.sum(result.normalized_recoil_spectrum_MeV[targetName]) * Enr_step_size_MeV
 
   return result

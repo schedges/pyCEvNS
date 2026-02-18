@@ -1,0 +1,34 @@
+
+{ 
+  "detector": {
+    "isotopes": ["23Na","127I"], //such as 19F, 208Pb
+    "atom_fracs": [0.5,0.5],
+    "mass_kg": 185.0
+  },
+
+  "source": {
+    "name": "pidar",
+    "flavor": "all",
+    //source specific required params
+    "params": {
+      "beam_energy_MeV":1000.0,
+      "beam_power_MW":1.7,
+      "nu_per_flavor_per_proton":0.09,
+      "distance_m":20.0
+    }
+  },
+
+  "binning": {
+    "Enu_step_size_MeV": 0.01, //Binning for neutrino energy grid. Recommended is 1 keV
+    "Enr_step_size_MeV": 0.00001 //Binning for nuclear recoil energy grid. Recommended is 1 eV
+  },
+
+  //Optional
+  "physics_params": {
+    "vector_ff_type":"helm"
+  },
+
+  "output": {
+    "output_folder": "output/NaI_pidar"
+  }
+}
